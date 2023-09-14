@@ -14,8 +14,17 @@ public class TriangleSurface : MonoBehaviour
     /// </summary>
     public struct Hit
     {
+        /// <summary>
+        /// Collision point in world space.
+        /// </summary>
         public Vector3 Position;
+        /// <summary>
+        /// Normal on the surface at the point of contact. Is normalized.
+        /// </summary>
         public Vector3 Normal;
+        /// <summary>
+        /// If there was a collision.
+        /// </summary>
         public bool isHit;
     }
 

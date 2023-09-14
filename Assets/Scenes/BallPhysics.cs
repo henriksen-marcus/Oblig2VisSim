@@ -1,12 +1,10 @@
-using Palmmedia.ReportGenerator.Core;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 
 public class BallPhysics : MonoBehaviour
 {
-
     [SerializeField] TriangleSurface triangleSurface;
     Vector3 g = Physics.gravity;
     float m = 1f;
@@ -22,22 +20,29 @@ public class BallPhysics : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector3 pos = transform.position;
+        var position = transform.position;
+        Vector3 pos = position;
         Vector2 pos2D = new Vector2(pos.x, pos.z);
         var hit = triangleSurface.GetCollision(pos2D);
-        print(hit.Position);
 
         Vector3 newVel = velocity;
         Vector3 N = new Vector3();
         Vector3 G = m * g;
+        Vector3 force = new Vector3();
 
-        if (hit.isHit)
+        var thisy = Mathf.Abs(hit.Position.y);
+        var thaty = Mathf.Abs(position.y);
+        
+        bool validY = Math.Max(thisy, thaty) - Mathf.Min(thisy, thaty) <= transform.localScale.y / 2;
+
+        if (hit.isHit && validY)
         {
-            Vector3 Vnormal = Vector3.Dot(velocity, hit.Normal) * hit.Normal;
+            print("Hit");
+            force += Vector3.Dot(velocity, hit.Normal) * hit.Normal;
             // Reflection
-            newVel = velocity - 2 * bounciness * Vnormal;
+            force += velocity - 2 * bounciness * force;
 
-            N = Vector3.Dot(G, hit.Normal) * hit.Normal;
+            N = -Vector3.Dot(hit.Normal, G) * hit.Normal;
         }
 
         Vector3 acceleration = new Vector3();
