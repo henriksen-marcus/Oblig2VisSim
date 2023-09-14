@@ -32,6 +32,9 @@ public class TriangleSurface : MonoBehaviour
     void Start()
     {
         InitMesh();
+        
+        var a = GetCollision(new Vector2(5, 5));
+        if(a.isHit) print(a.Position);
     }
 
     private void InitMesh()
@@ -65,9 +68,11 @@ public class TriangleSurface : MonoBehaviour
         indices.Add(5);
         indices.Add(1);
 
-        generatedMesh = new Mesh();
-        generatedMesh.vertices = vertices.ToArray();
-        generatedMesh.triangles = indices.ToArray();
+        generatedMesh = new Mesh
+        {
+            vertices = vertices.ToArray(),
+            triangles = indices.ToArray()
+        };
 
         GetComponent<MeshFilter>().mesh = generatedMesh;
     }
@@ -78,27 +83,29 @@ public class TriangleSurface : MonoBehaviour
         hit.Position.x = position.x;
         hit.Position.z = position.y;
 
-        for (int i = 0; i < indices.Count; i += 3)
+        for (var i = 0; i < indices.Count; i += 3)
         {
             int i1 = indices[i];
             int i2 = indices[i + 1];
             int i3 = indices[i + 2];
 
-            Vector2 v1 = vertices[i1];
-            Vector2 v2 = vertices[i2];
-            Vector2 v3 = vertices[i3];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+            Vector3 v3 = vertices[i3];
 
             float u, v, w;
             Barycentric(v1, v2, v3, position, out u, out v, out w);
 
-            if (u >= 0f && u <= 1f && v >= 0f && v <= 1f && w >= 0f && w <= 1f)
+            if (u is >= 0f and <= 1f && v is >= 0f and <= 1f && w is >= 0f and <= 1f)
             {
-                hit.Position.y = vertices[i1].y * u + vertices[i2].y * v + vertices[i3].y * w;
+                var y = vertices[i1].y * v + vertices[i2].y * u + vertices[i3].y * w;
+                //print($"{vertices[i1].y} * {u} + {vertices[i2].y} * {v} + {vertices[i3].y} * {w} = {y}");
+                hit.Position.y = y;
                 hit.Normal = Vector3.Cross(v1, v2).normalized;
+                hit.isHit = true;
                 return hit;
             }
         }
-
         return hit;
     }
 
@@ -110,9 +117,9 @@ public class TriangleSurface : MonoBehaviour
             int i2 = indices[i + 1];
             int i3 = indices[i + 2];
 
-            Vector2 v1 = vertices[i1];
-            Vector2 v2 = vertices[i2];
-            Vector2 v3 = vertices[i3];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+            Vector3 v3 = vertices[i3];
 
             float u, v, w;
             Barycentric(v1, v2, v3, point, out u, out v, out w);
