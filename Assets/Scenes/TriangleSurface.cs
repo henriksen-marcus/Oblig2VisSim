@@ -21,7 +21,6 @@ public class TriangleSurface : MonoBehaviour
 
 
     private Mesh generatedMesh;
-    [SerializeField] GameObject objectToGiveMesh;
 
     List<Vector3> vertices = new List<Vector3>();
     List<int> indices = new List<int>();
@@ -70,13 +69,14 @@ public class TriangleSurface : MonoBehaviour
         generatedMesh.vertices = vertices.ToArray();
         generatedMesh.triangles = indices.ToArray();
 
-        objectToGiveMesh.GetComponent<MeshFilter>().mesh = generatedMesh;
+        GetComponent<MeshFilter>().mesh = generatedMesh;
     }
 
     public Hit GetCollision(Vector2 position)
     {
         var hit = new Hit();
-        hit.Position = position;
+        hit.Position.x = position.x;
+        hit.Position.z = position.y;
 
         for (int i = 0; i < indices.Count; i += 3)
         {
@@ -94,7 +94,7 @@ public class TriangleSurface : MonoBehaviour
             if (u >= 0f && u <= 1f && v >= 0f && v <= 1f && w >= 0f && w <= 1f)
             {
                 hit.Position.y = vertices[i1].y * u + vertices[i2].y * v + vertices[i3].y * w;
-                hit.Normal = Vector3.Cross(v1, v2);
+                hit.Normal = Vector3.Cross(v1, v2).normalized;
                 return hit;
             }
         }
