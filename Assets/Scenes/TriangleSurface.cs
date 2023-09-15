@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using Color = System.Drawing.Color;
 
 public class TriangleSurface : MonoBehaviour
 {
@@ -143,7 +144,7 @@ public class TriangleSurface : MonoBehaviour
 
             if (u is >= 0f and <= 1f && v is >= 0f and <= 1f && w is >= 0f and <= 1f)
             {
-                var y = vertices[i1].Pos.y * v + vertices[i2].Pos.y * u + vertices[i3].Pos.y * w;
+                var y = vertices[i1].Pos.y * u + vertices[i2].Pos.y * v + vertices[i3].Pos.y * w;
                 //print($"{vertices[i1].y} * {u} + {vertices[i2].y} * {v} + {vertices[i3].y} * {w} = {y}");
                 hit.Position.y = y;
                 //hit.Normal = v1.Normal;
@@ -180,11 +181,19 @@ public class TriangleSurface : MonoBehaviour
         for (var i = 0; i < indices.Count; i += 3)
         {
             int i1 = indices[i];
+            int i2 = indices[i + 1];
+            int i3 = indices[i + 2];
+
             var v1 = vertices[i1];
-            Gizmos.DrawLine(v1.Pos, v1.Pos + (v1.Normal * 50));
+            var v2 = vertices[i2];
+            var v3 = vertices[i3];
+
+            var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * 10;
+            Gizmos.color = UnityEngine.Color.cyan;
+            Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
+            Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
+            Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
         }
-        
-        Gizmos.DrawLine(new Vector3(15.69f, -500, 15.69f), new Vector3(15.69f, 500, 15.69f));
     }
 }
 

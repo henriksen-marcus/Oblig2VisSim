@@ -13,6 +13,8 @@ public class BallPhysics : MonoBehaviour
     Vector3 velocity = Vector3.zero;
     Vector3 prevNormal = Vector3.zero;
     [SerializeField] [Range(0,1)] float bounciness = 0; 
+    
+    Vector3 lastGivenPos = Vector3.zero;
 
     // Start is called before the first frame update
     void Start()
@@ -41,17 +43,26 @@ public class BallPhysics : MonoBehaviour
             // Reflection
             velocity = velocity - normalVelocity - bounciness * normalVelocity;
 
+            lastGivenPos = hit.Position;
+
             N = -Vector3.Dot(hit.Normal, G) * hit.Normal;
-            
+
             /*print("Pos:" + hit.Position);
             print("Norm" + hit.Normal);*/
             print("Hit");
         }
+        else lastGivenPos = Vector3.zero;
 
         Vector3 acceleration = new Vector3();
         acceleration = (G + N) / m;
 
         velocity += acceleration * Time.fixedDeltaTime;
         transform.position += velocity * Time.fixedDeltaTime;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(lastGivenPos, 4f);
     }
 }
