@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.PlayerSettings.SplashScreen;
 
 public class TriangleSurface : MonoBehaviour
 {
@@ -28,32 +27,43 @@ public class TriangleSurface : MonoBehaviour
         public bool isHit;
     }
 
+    public class Vertex
+    {
+        public Vector3 Pos;
+        public Vector3 Normal;
+        
+        public Vertex(Vector3 pos, Vector3 normal = new())
+        {
+            Pos = pos;
+            Normal = normal;
+        }
+    }
 
     private Mesh generatedMesh;
-
-    List<Vector3> vertices = new List<Vector3>();
-    List<int> indices = new List<int>();
-    List<Vector3> tri_indices = new List<Vector3>();
-
-    
+    List<Vertex> vertices = new();
+    List<int> indices = new();
 
     // Start is called before the first frame update
     void Start()
     {
         InitMesh();
-        
-        var a = GetCollision(new Vector2(5, 5));
-        if(a.isHit) print(a.Position);
+        CalculateNormals();
+
+
+        var hit = GetCollision(new Vector2(15.19f, 15.19f));
+        print($"Hit: {hit.isHit}");
+        print($"Pos: {hit.Position}");
+        print($"Norm: {hit.Normal}");
     }
 
     private void InitMesh()
     {
-        vertices.Add(new Vector3(0, 21.6f, 0));
-        vertices.Add(new Vector3(56, 0, 0));
-        vertices.Add(new Vector3(0, 0, 56));
-        vertices.Add(new Vector3(56, 11, 56));
-        vertices.Add(new Vector3(112, 0, 56));
-        vertices.Add(new Vector3(112, 13, 0));
+        vertices.Add(new Vertex(new Vector3(0, 21.6f, 0)));
+        vertices.Add(new Vertex(new Vector3(56, 0, 0)));
+        vertices.Add(new Vertex(new Vector3(0, 0, 56)));
+        vertices.Add(new Vertex(new Vector3(56, 11, 56)));
+        vertices.Add(new Vertex(new Vector3(112, 0, 56)));
+        vertices.Add(new Vertex(new Vector3(112, 13, 0)));
 
         // 1     With the clock
         // |\
@@ -79,11 +89,33 @@ public class TriangleSurface : MonoBehaviour
 
         generatedMesh = new Mesh
         {
-            vertices = vertices.ToArray(),
+            vertices = vertices.Select(v => v.Pos).ToArray(),
             triangles = indices.ToArray()
         };
 
         GetComponent<MeshFilter>().mesh = generatedMesh;
+    }
+
+    private void CalculateNormals()
+    {
+        for (var i = 0; i < indices.Count; i += 3)
+        {
+            int i1 = indices[i];
+            int i2 = indices[i + 1];
+            int i3 = indices[i + 2];
+
+            var v1 = vertices[i1];
+            var v2 = vertices[i2];
+            var v3 = vertices[i3];
+            
+            var normal = Vector3.Cross(v2.Pos-v1.Pos, v3.Pos-v2.Pos).normalized;
+            v1.Normal += normal;
+            v2.Normal += normal;
+            v3.Normal += normal;
+            
+        }
+
+        vertices.ForEach(v => v.Normal = v.Normal.normalized);
     }
 
     public Hit GetCollision(Vector2 position)
@@ -98,49 +130,29 @@ public class TriangleSurface : MonoBehaviour
             int i2 = indices[i + 1];
             int i3 = indices[i + 2];
 
-            Vector3 v1 = vertices[i1];
-            Vector3 v2 = vertices[i2];
-            Vector3 v3 = vertices[i3];
+            var v1 = vertices[i1];
+            var v2 = vertices[i2];
+            var v3 = vertices[i3];
+
+            var v1e = new Vector2(v1.Pos.x, v1.Pos.z);
+            var v2e = new Vector2(v2.Pos.x, v2.Pos.z);
+            var v3e = new Vector2(v3.Pos.x, v3.Pos.z);
 
             float u, v, w;
-            Barycentric(v1, v2, v3, position, out u, out v, out w);
+            Barycentric(v1e, v2e, v3e, position, out u, out v, out w);
 
             if (u is >= 0f and <= 1f && v is >= 0f and <= 1f && w is >= 0f and <= 1f)
             {
-                var y = vertices[i1].y * v + vertices[i2].y * u + vertices[i3].y * w;
+                var y = vertices[i1].Pos.y * v + vertices[i2].Pos.y * u + vertices[i3].Pos.y * w;
                 //print($"{vertices[i1].y} * {u} + {vertices[i2].y} * {v} + {vertices[i3].y} * {w} = {y}");
                 hit.Position.y = y;
-                hit.Normal = Vector3.Cross(v1, v2).normalized;
+                //hit.Normal = v1.Normal;
+                hit.Normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos-v2.Pos).normalized;
                 hit.isHit = true;
                 return hit;
             }
         }
         return hit;
-    }
-
-    public float GetHeight(Vector2 point)
-    {
-        for (int i = 0; i < indices.Count; i += 3)
-        {
-            int i1 = indices[i];
-            int i2 = indices[i + 1];
-            int i3 = indices[i + 2];
-
-            Vector3 v1 = vertices[i1];
-            Vector3 v2 = vertices[i2];
-            Vector3 v3 = vertices[i3];
-
-            float u, v, w;
-            Barycentric(v1, v2, v3, point, out u, out v, out w);
-
-            if (u >= 0f && u <= 1f && v >= 0f && v <= 1f && w >= 0f && w <= 1f)
-            {
-                float h = vertices[i1].y * u + vertices[i2].y * v + vertices[i3].y * w;
-                return h;
-            }
-        }
-
-        return -1;
     }
 
     public static void Barycentric(Vector2 a, Vector2 b, Vector2 c, Vector2 p, out float u, out float v, out float w)
@@ -161,4 +173,19 @@ public class TriangleSurface : MonoBehaviour
         w = (d00 * d21 - d01 * d20) / denom;
         u = 1.0f - v - w;
     }
+
+    void OnDrawGizmos()
+    {
+        // For each triangle
+        for (var i = 0; i < indices.Count; i += 3)
+        {
+            int i1 = indices[i];
+            var v1 = vertices[i1];
+            Gizmos.DrawLine(v1.Pos, v1.Pos + (v1.Normal * 50));
+        }
+        
+        Gizmos.DrawLine(new Vector3(15.69f, -500, 15.69f), new Vector3(15.69f, 500, 15.69f));
+    }
 }
+
+

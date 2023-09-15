@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class BallPhysics : MonoBehaviour
 {
     [SerializeField] TriangleSurface triangleSurface;
     Vector3 g = Physics.gravity;
     float m = 1f;
+    float r = 2f;
     Vector3 velocity = Vector3.zero;
     Vector3 prevNormal = Vector3.zero;
     [SerializeField] [Range(0,1)] float bounciness = 0; 
@@ -15,34 +17,35 @@ public class BallPhysics : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        //Time.timeScale = 0.3f;
     }
 
     private void FixedUpdate()
     {
-        var position = transform.position;
-        Vector3 pos = position;
+        Vector3 pos = transform.position;
         Vector2 pos2D = new Vector2(pos.x, pos.z);
         var hit = triangleSurface.GetCollision(pos2D);
 
         Vector3 newVel = velocity;
         Vector3 N = new Vector3();
         Vector3 G = m * g;
-        Vector3 force = new Vector3();
-
-        var thisy = Mathf.Abs(hit.Position.y);
-        var thaty = Mathf.Abs(position.y);
+        Vector3 normalVelocity;
         
-        bool validY = Math.Max(thisy, thaty) - Mathf.Min(thisy, thaty) <= transform.localScale.y / 2;
+        bool validY = Mathf.Abs(hit.Position.y - pos.y) <= r;
 
-        if (hit.isHit && validY)
+        //print($"isHit: {hit.isHit}, Pos: {hit.Position}, ValidY: {validY}");
+
+        if (hit.isHit /*&& validY*/)
         {
-            print("Hit");
-            force += Vector3.Dot(velocity, hit.Normal) * hit.Normal;
+            normalVelocity = Vector3.Dot(velocity, hit.Normal) * hit.Normal;
             // Reflection
-            force += velocity - 2 * bounciness * force;
+            velocity = velocity - normalVelocity - bounciness * normalVelocity;
 
             N = -Vector3.Dot(hit.Normal, G) * hit.Normal;
+            
+            /*print("Pos:" + hit.Position);
+            print("Norm" + hit.Normal);*/
+            print("Hit");
         }
 
         Vector3 acceleration = new Vector3();
@@ -51,9 +54,4 @@ public class BallPhysics : MonoBehaviour
         velocity += acceleration * Time.fixedDeltaTime;
         transform.position += velocity * Time.fixedDeltaTime;
     }
-
-    // make trangle surface class that holds the meshæ
-    // this class need a function to get barycentric coordiantes and also returns a hit struct,
-    // that contains the hit normal of the surface at that point
-    // then compare the height to the height of the ball and check if the diff is less than or equal to the radius of the ball to see if we have contact.
 }
