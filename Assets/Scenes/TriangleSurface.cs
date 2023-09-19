@@ -64,7 +64,7 @@ public class TriangleSurface : MonoBehaviour
         vertices.Add(new Vertex(new Vector3(0, 0, 56)));
         vertices.Add(new Vertex(new Vector3(56, 11, 56)));
         vertices.Add(new Vertex(new Vector3(112, 0, 56)));
-        vertices.Add(new Vertex(new Vector3(112, 13, 0)));
+        vertices.Add(new Vertex(new Vector3(112, 11, 0)));
 
         // 1     With the clock
         // |\
@@ -156,7 +156,7 @@ public class TriangleSurface : MonoBehaviour
         return hit;
     }
 
-    public static void Barycentric(Vector2 a, Vector2 b, Vector2 c, Vector2 p, out float u, out float v, out float w)
+    private static void Barycentric(Vector2 a, Vector2 b, Vector2 c, Vector2 p, out float u, out float v, out float w)
     {
         Vector2 v0 = b - a;
         Vector2 v1 = c - a;
