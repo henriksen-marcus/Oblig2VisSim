@@ -38,8 +38,9 @@ public class BallPhysics : MonoBehaviour
         Vector3 normalVelocity;
         
         CorrectCollisionToSurface(ref hit);
-        
-        bool validY = Mathf.Abs(hit.Position.y - pos.y) <= r;
+
+        float dist = Mathf.Abs(hit.Position.y - pos.y);
+        bool validY = dist <= r;
         
         if (hit.isHit && validY)
         {
@@ -52,9 +53,10 @@ public class BallPhysics : MonoBehaviour
             
             N = -Vector3.Dot(hit.Normal, G) * hit.Normal;
 
-            /*print("Pos:" + hit.Position);
-            print("Norm" + hit.Normal);*/
-            //print("Hit");
+            // Move ball up to surface
+            pos = transform.position;
+            pos.y += r - dist;
+            transform.position = pos;
         }
         else lastGivenPos = Vector3.zero;
 
