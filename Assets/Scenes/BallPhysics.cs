@@ -6,15 +6,20 @@ using UnityEngine.Animations;
 
 public class BallPhysics : MonoBehaviour
 {
+    [Header("Settings")]
+    [SerializeField] float mass = 1f;
     [SerializeField] TriangleSurface triangleSurface;
-    Vector3 g = Physics.gravity;
-    float m = 1f;
-    float r = 2f;
-    Vector3 velocity = Vector3.zero;
-    Vector3 prevNormal = Vector3.zero;
-    [SerializeField] [Range(0,1)] float bounciness = 0; 
+    [SerializeField] [Range(0,1)] float bounciness = 0;
+
+    [Header("Debug")] 
+    [SerializeField] private bool showDebugSphere;
     
-    Vector3 lastGivenPos = Vector3.zero;
+    private Vector3 g = Physics.gravity;
+    private float m = 1f;
+    private float r = 2f;
+    private Vector3 velocity = Vector3.zero;
+    private Vector3 prevNormal = Vector3.zero;
+    private Vector3 lastGivenPos = Vector3.zero;
 
     // Start is called before the first frame update
     void Start()
@@ -34,8 +39,7 @@ public class BallPhysics : MonoBehaviour
         Vector3 normalVelocity;
         
         bool validY = Mathf.Abs(hit.Position.y - pos.y) <= r;
-
-        //print($"isHit: {hit.isHit}, Pos: {hit.Position}, ValidY: {validY}");
+        
 
         if (hit.isHit /*&& validY*/)
         {
@@ -49,20 +53,23 @@ public class BallPhysics : MonoBehaviour
 
             /*print("Pos:" + hit.Position);
             print("Norm" + hit.Normal);*/
-            print("Hit");
+            //print("Hit");
         }
         else lastGivenPos = Vector3.zero;
 
-        Vector3 acceleration = new Vector3();
-        acceleration = (G + N) / m;
+        Vector3 accel;
+        accel = (G + N) / m;
 
-        velocity += acceleration * Time.fixedDeltaTime;
+        velocity += accel * Time.fixedDeltaTime;
         transform.position += velocity * Time.fixedDeltaTime;
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(lastGivenPos, 4f);
+        if (showDebugSphere)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(lastGivenPos, 4f);
+        }
     }
 }
