@@ -177,7 +177,7 @@ public class TriangleSurface : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        // For each triangle
+        // Draw normals for each triangle
         for (var i = 0; i < indices.Count; i += 3)
         {
             int i1 = indices[i];
@@ -193,6 +193,23 @@ public class TriangleSurface : MonoBehaviour
             Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
             Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
             Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
+        }
+        
+        // Draw line around each triangle
+        for (var i = 0; i < indices.Count; i += 3)
+        {
+            int i1 = indices[i];
+            int i2 = indices[i + 1];
+            int i3 = indices[i + 2];
+
+            var v1 = vertices[i1];
+            var v2 = vertices[i2];
+            var v3 = vertices[i3];
+
+            Gizmos.color = UnityEngine.Color.yellow;
+            Gizmos.DrawLine(v1.Pos, v2.Pos);
+            Gizmos.DrawLine(v2.Pos, v3.Pos);
+            Gizmos.DrawLine(v3.Pos, v1.Pos);
         }
     }
 }
