@@ -7,12 +7,11 @@ using UnityEngine.Animations;
 public class BallPhysics : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] float mass = 1f;
     [SerializeField] TriangleSurface triangleSurface;
     [SerializeField] [Range(0,1)] float bounciness = 0;
 
     [Header("Debug")] 
-    [SerializeField] private bool showDebugSphere;
+    [SerializeField] private bool showDebugSphere = true;
     
     private Vector3 g = Physics.gravity;
     private float m = 1f;
@@ -24,7 +23,7 @@ public class BallPhysics : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //Time.timeScale = 0.3f;
+        //Time.timeScale = 0.1f;
     }
 
     private void FixedUpdate()
@@ -38,17 +37,19 @@ public class BallPhysics : MonoBehaviour
         Vector3 G = m * g;
         Vector3 normalVelocity;
         
+        CorrectCollisionToSurface(ref hit);
+        
         bool validY = Mathf.Abs(hit.Position.y - pos.y) <= r;
         
-
-        if (hit.isHit /*&& validY*/)
+        if (hit.isHit && validY)
         {
             normalVelocity = Vector3.Dot(velocity, hit.Normal) * hit.Normal;
+            
             // Reflection
             velocity = velocity - normalVelocity - bounciness * normalVelocity;
-
+            
             lastGivenPos = hit.Position;
-
+            
             N = -Vector3.Dot(hit.Normal, G) * hit.Normal;
 
             /*print("Pos:" + hit.Position);
@@ -64,12 +65,24 @@ public class BallPhysics : MonoBehaviour
         transform.position += velocity * Time.fixedDeltaTime;
     }
 
+    /// <summary>
+    /// Modifies the hit position to accurately reflect the ball's
+    /// position if it were to lie on the triangle surface.
+    /// </summary>
+    /// <param name="hit"></param>
+    void CorrectCollisionToSurface(ref TriangleSurface.Hit hit)
+    {
+        var c = transform.position;
+        Vector3 d = c - hit.Position;
+        hit.Position = c - Vector3.Dot(d, hit.Normal) * hit.Normal;
+    }
+
     private void OnDrawGizmos()
     {
         if (showDebugSphere)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(lastGivenPos, 4f);
+            Gizmos.DrawWireSphere(lastGivenPos, 2.2f);
         }
     }
 }
