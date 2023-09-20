@@ -64,6 +64,8 @@ public class BallPhysics : MonoBehaviour
 
         velocity += accel * Time.fixedDeltaTime;
         transform.position += velocity * Time.fixedDeltaTime;
+        
+        print($"Position: {transform.position}\nVelocity: {velocity}\nAcceleration: {accel}\nNormal: {hit.Normal}");
     }
 
     /// <summary>

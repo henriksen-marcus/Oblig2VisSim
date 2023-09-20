@@ -90,8 +90,10 @@ public class TriangleSurface : MonoBehaviour
         for (var i = 1; i < indexNumLines + 1; i++)
         {
             var line = indexLines[i].Split(delimchars, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var num in line)
-                indices.Add(int.Parse(num));
+            
+            indices.Add(int.Parse(line[0]));
+            indices.Add(int.Parse(line[1]));
+            indices.Add(int.Parse(line[2]));
         }
     }
 
@@ -167,6 +169,7 @@ public class TriangleSurface : MonoBehaviour
                 //hit.Normal = v1.Normal;
                 hit.Normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos-v2.Pos).normalized;
                 hit.isHit = true;
+                print("Triangle: " + i/3 + " hit!");
                 return hit;
             }
         }
