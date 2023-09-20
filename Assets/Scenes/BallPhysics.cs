@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -9,13 +10,13 @@ public class BallPhysics : MonoBehaviour
     [Header("Settings")]
     [SerializeField] TriangleSurface triangleSurface;
     [SerializeField] [Range(0,1)] float bounciness = 0;
-
+    
     [Header("Debug")] 
     [SerializeField] private bool showDebugSphere = true;
     
     private Vector3 g = Physics.gravity;
     private float m = 1f;
-    private float r = 2f;
+    private float r = 0.02f;
     private Vector3 velocity = Vector3.zero;
     private Vector3 prevNormal = Vector3.zero;
     private Vector3 lastGivenPos = Vector3.zero;
@@ -39,7 +40,8 @@ public class BallPhysics : MonoBehaviour
         
         CorrectCollisionToSurface(ref hit);
 
-        float dist = Mathf.Abs(hit.Position.y - pos.y);
+        
+        float dist = Vector3.Distance(hit.Position, pos);
         bool validY = dist <= r;
         
         if (hit.isHit && validY)
@@ -54,14 +56,11 @@ public class BallPhysics : MonoBehaviour
             N = -Vector3.Dot(hit.Normal, G) * hit.Normal;
 
             // Move ball up to surface
-            pos = transform.position;
-            pos.y += r - dist;
-            transform.position = pos;
+            transform.position = hit.Position + r * hit.Normal;
         }
         else lastGivenPos = Vector3.zero;
 
-        Vector3 accel;
-        accel = (G + N) / m;
+        var accel = (G + N) / m;
 
         velocity += accel * Time.fixedDeltaTime;
         transform.position += velocity * Time.fixedDeltaTime;
@@ -71,8 +70,7 @@ public class BallPhysics : MonoBehaviour
     /// Modifies the hit position to accurately reflect the ball's
     /// position if it were to lie on the triangle surface.
     /// </summary>
-    /// <param name="hit"></param>
-    void CorrectCollisionToSurface(ref TriangleSurface.Hit hit)
+    private void CorrectCollisionToSurface(ref TriangleSurface.Hit hit)
     {
         var c = transform.position;
         Vector3 d = c - hit.Position;

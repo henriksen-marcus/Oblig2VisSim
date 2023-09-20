@@ -1,10 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using Color = System.Drawing.Color;
 
 public class TriangleSurface : MonoBehaviour
 {
@@ -28,7 +28,7 @@ public class TriangleSurface : MonoBehaviour
         public bool isHit;
     }
 
-    public class Vertex
+    private class Vertex
     {
         public Vector3 Pos;
         public Vector3 Normal;
@@ -40,6 +40,9 @@ public class TriangleSurface : MonoBehaviour
         }
     }
 
+    [SerializeField] private TextAsset vertexData;
+    [SerializeField] private TextAsset indexData;
+    
     private Mesh generatedMesh;
     List<Vertex> vertices = new();
     List<int> indices = new();
@@ -48,45 +51,59 @@ public class TriangleSurface : MonoBehaviour
     void Start()
     {
         InitMesh();
-        CalculateNormals();
+        //ReadFromFile();
+    }
+    
+    /// <summary>
+    /// Reads vertex and index data from file and puts them into the vertices and indices lists.
+    /// </summary>
+    /// <exception cref="FileNotFoundException">Throws if the data files are not set.</exception>
+    private void ReadFromFile()
+    {
+        if (!vertexData || !indexData) 
+            throw new FileNotFoundException("Vertex or index data files not found.");
+        
+        // Delimiters we want to split on
+        var delimfile = new[] {"\r\n", "\n", "\r"};
+        var delimchars = new[] {' ', '\t'};
+        
+        // Split the text into lines
+        var vertexLines = vertexData.text.Split(delimfile, System.StringSplitOptions.RemoveEmptyEntries);
+        var indexLines = indexData.text.Split(delimfile, System.StringSplitOptions.RemoveEmptyEntries);
 
+        var vertexNumLines = int.Parse(vertexLines[0]);
+        var indexNumLines = int.Parse(indexLines[0]);
+        
+        // Read and insert vertex data
+        for (var i = 1; i < vertexNumLines + 1; i++)
+        {
+            var xyz = vertexLines[i].Split(delimchars, StringSplitOptions.RemoveEmptyEntries);
 
-        var hit = GetCollision(new Vector2(15.19f, 15.19f));
-        print($"Hit: {hit.isHit}");
-        print($"Pos: {hit.Position}");
-        print($"Norm: {hit.Normal}");
+            vertices.Add(new Vertex(new Vector3(
+                float.Parse(xyz[0], CultureInfo.InvariantCulture), 
+                float.Parse(xyz[1], CultureInfo.InvariantCulture), 
+                float.Parse(xyz[2], CultureInfo.InvariantCulture)
+            )));
+        }
+        
+        // Read and insert index data
+        for (var i = 1; i < indexNumLines + 1; i++)
+        {
+            var line = indexLines[i].Split(delimchars, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var num in line)
+                indices.Add(int.Parse(num));
+        }
     }
 
     private void InitMesh()
     {
-        vertices.Add(new Vertex(new Vector3(0, 21.6f, 0)));
-        vertices.Add(new Vertex(new Vector3(56, 0, 0)));
-        vertices.Add(new Vertex(new Vector3(0, 0, 56)));
-        vertices.Add(new Vertex(new Vector3(56, 11, 56)));
-        vertices.Add(new Vertex(new Vector3(112, 0, 56)));
-        vertices.Add(new Vertex(new Vector3(112, 11, 0)));
-
         // 1     With the clock
         // |\
         // | \
         // |  \
         // 0___2
-
-        indices.Add(0);
-        indices.Add(2);
-        indices.Add(1);
-
-        indices.Add(1);
-        indices.Add(2);
-        indices.Add(3);
-
-        indices.Add(3);
-        indices.Add(4);
-        indices.Add(1);
-
-        indices.Add(4);
-        indices.Add(5);
-        indices.Add(1);
+        
+        ReadFromFile();
 
         generatedMesh = new Mesh
         {
@@ -177,6 +194,8 @@ public class TriangleSurface : MonoBehaviour
 
     void OnDrawGizmos()
     {
+         
+        
         // Draw normals for each triangle
         for (var i = 0; i < indices.Count; i += 3)
         {
@@ -188,7 +207,7 @@ public class TriangleSurface : MonoBehaviour
             var v2 = vertices[i2];
             var v3 = vertices[i3];
 
-            var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * 10;
+            var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * 0.1f;
             Gizmos.color = UnityEngine.Color.cyan;
             Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
             Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
