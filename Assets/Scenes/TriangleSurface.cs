@@ -169,7 +169,7 @@ public class TriangleSurface : MonoBehaviour
                 //hit.Normal = v1.Normal;
                 hit.Normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos-v2.Pos).normalized;
                 hit.isHit = true;
-                print("Triangle: " + i/3 + " hit!");
+                //print("Triangle: " + i/3 + " hit!");
                 return hit;
             }
         }
