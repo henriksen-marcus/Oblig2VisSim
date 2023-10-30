@@ -339,9 +339,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vertexData: {fileID: 4900000, guid: cb88ed4424e7e6f4295ff3ab3e67bac4, type: 3}
-  maxPos: {x: 0, y: 0, z: 0}
   objMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   objMat: {fileID: 2100000, guid: 627915c462d8e414ca0d03b90b0ab7e2, type: 2}
+  skipAmount: 100
+  scale: 0.05
 --- !u!4 &1523950157
 Transform:
   m_ObjectHideFlags: 0
