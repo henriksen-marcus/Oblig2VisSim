@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class ObjData
@@ -60,12 +61,41 @@ public class PointCloud : MonoBehaviour
     /// Ensure that the point cloud is placed at the world origin. 
     /// </summary>
     private Vector3 offset;
+    
+    public ComputeBuffer argsBuffer;
+    private uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
+    private Bounds bounds = new Bounds(Vector3.zero, new Vector3(50.0f, 50.0f, 50.0f));
+
 
     void Start()
     {
         ReadFromFile();
+        //SortDataIntoBatches();
+        
+        // Create a ComputeBuffer to store the mesh matrices
+        int numInstances = vertices.Count;
+        ComputeBuffer meshMatricesBuffer = new ComputeBuffer(numInstances, Marshal.SizeOf(typeof(Matrix4x4)));
+        
+        // Fill the ComputeBuffer with the mesh matrices
+        for (int i = 0; i < numInstances; i++) {
+            Matrix4x4 meshMatrix = Matrix4x4.identity;
+            // ... calculate the mesh matrix for the i-th instance ...
+            meshMatricesBuffer.SetData(new Matrix4x4[] { meshMatrix });
+        }
+        
+        var argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+        args[0] = (uint)objMesh.GetIndexCount(0); // Index count per instance
+        args[1] = (uint)objMat; // Instance count
+        args[2] = (uint)instanceMesh.GetIndexStart(0); // Start index location
+        args[3] = (uint)instanceMesh.GetBaseVertex(0); // Base vertex location
+        argsBuffer.SetData(args);
+    }
 
-        // Sort vertices into batches for rendering
+    /// <summary>
+    /// Sort vertices into batches for rendering
+    /// </summary>
+    private void SortDataIntoBatches()
+    {
         int batchIndexNum = 0;
         List<ObjData> currBatch = new();
         foreach (var i in vertices)
@@ -91,6 +121,14 @@ public class PointCloud : MonoBehaviour
     private void Update()
     {
         RenderBatches();
+        RenderComputeBuffer();
+    }
+
+    private void RenderComputeBuffer()
+    {
+        
+        
+        Graphics.DrawMeshInstancedIndirect(Mesh, Material, SubmeshIndex, meshMatricesBuffer, indirectArgs);
     }
 
     /// <summary>
