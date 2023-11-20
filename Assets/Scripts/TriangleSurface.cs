@@ -43,19 +43,27 @@ public class TriangleSurface : MonoBehaviour
     [SerializeField] private TextAsset vertexData;
     [SerializeField] private TextAsset indexData;
     [SerializeField] private bool drawMeshLines = false;
+    [SerializeField] private bool drawNormals = false;
+    [SerializeField] private float normalLength = 1f;
     [SerializeField] private Color lineColor = Color.grey;
+    [SerializeField] private Color normalColor = Color.cyan;
+    [SerializeField] private float scale = 1f;
     
     private Mesh generatedMesh;
+    private MeshCollider meshCollider;
     List<Vertex> vertices = new();
     List<int> indices = new();
+    
 
-    private Vector3 temp;
-
-    // Start is called before the first frame update
     void Start()
     {
         InitMesh();
-        //ReadFromFile();
+        //CalculateNormals();
+
+        /* We need a mesh collider for ray casting when spawning new balls.
+         * it is not used for colliding the the balls themselves. */
+        meshCollider = GetComponent<MeshCollider>();
+        meshCollider.sharedMesh = generatedMesh;
     }
     
     /// <summary>
@@ -90,6 +98,9 @@ public class TriangleSurface : MonoBehaviour
             )));
         }
         
+        // Scale the system
+        foreach (var i in vertices) i.Pos *= scale;
+        
         // Read and insert index data
         for (var i = 1; i < indexNumLines + 1; i++)
         {
@@ -99,18 +110,10 @@ public class TriangleSurface : MonoBehaviour
             indices.Add(int.Parse(line[1]));
             indices.Add(int.Parse(line[2]));
         }
-
-        temp = vertices[0].Pos;
     }
 
     private void InitMesh()
     {
-        // 1     With the clock
-        // |\
-        // | \
-        // |  \
-        // 0___2
-        
         ReadFromFile();
 
         generatedMesh = new Mesh
@@ -120,6 +123,8 @@ public class TriangleSurface : MonoBehaviour
         };
 
         GetComponent<MeshFilter>().mesh = generatedMesh;
+        
+        print("Mesh size: " + generatedMesh.bounds.size);
     }
 
     private void CalculateNormals()
@@ -203,27 +208,8 @@ public class TriangleSurface : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if (!drawMeshLines) return;
+        if (!drawNormals && !drawMeshLines) return;
         
-        // Draw normals for each triangle
-        /*for (var i = 0; i < indices.Count; i += 3)
-        {
-            int i1 = indices[i];
-            int i2 = indices[i + 1];
-            int i3 = indices[i + 2];
-
-            var v1 = vertices[i1];
-            var v2 = vertices[i2];
-            var v3 = vertices[i3];
-
-            var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * 0.1f;
-            Gizmos.color = UnityEngine.Color.cyan;
-            Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
-            Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
-            Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
-        }*/
-        
-        // Draw line around each triangle
         for (var i = 0; i < indices.Count; i += 3)
         {
             int i1 = indices[i];
@@ -234,6 +220,16 @@ public class TriangleSurface : MonoBehaviour
             var v2 = vertices[i2];
             var v3 = vertices[i3];
 
+            if (drawNormals)
+            {
+                var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * normalLength;
+                Gizmos.color = normalColor;
+                Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
+                Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
+                Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
+            }
+
+            if (!drawMeshLines) continue;
             Gizmos.color = lineColor;
             Gizmos.DrawLine(v1.Pos, v2.Pos);
             Gizmos.DrawLine(v2.Pos, v3.Pos);

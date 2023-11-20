@@ -8,8 +8,8 @@ using UnityEngine.Animations;
 public class BallPhysics : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] TriangleSurface triangleSurface;
     [SerializeField] [Range(0,1)] float bounciness = 0;
+    public TriangleSurface triangleSurface { get; set; }
     
     [Header("Debug")] 
     [SerializeField] private bool showDebugSphere = true;
@@ -24,7 +24,8 @@ public class BallPhysics : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //Time.timeScale = 0.1f;
+        if (triangleSurface == null)
+            triangleSurface = WorldManager.Instance.triangleSurface;
     }
 
     private void FixedUpdate()
@@ -65,7 +66,7 @@ public class BallPhysics : MonoBehaviour
         velocity += accel * Time.fixedDeltaTime;
         transform.position += velocity * Time.fixedDeltaTime;
         
-        print($"Position: {transform.position}\nVelocity: {velocity}\nAcceleration: {accel}\nNormal: {hit.Normal}");
+        //print($"Position: {transform.position}\nVelocity: {velocity}\nAcceleration: {accel}\nNormal: {hit.Normal}");
     }
 
     /// <summary>
