@@ -9,10 +9,11 @@ public class BallPhysics : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] [Range(0,1)] float bounciness = 0;
-    public TriangleSurface triangleSurface { get; set; }
     
     [Header("Debug")] 
     [SerializeField] private bool showDebugSphere = true;
+
+    public TriangleSurface triangleSurface;
     
     private Vector3 g = Physics.gravity;
     private float m = 1f;
@@ -26,6 +27,8 @@ public class BallPhysics : MonoBehaviour
     {
         if (triangleSurface == null)
             triangleSurface = WorldManager.Instance.triangleSurface;
+        
+        r = transform.localScale.x / 2;
     }
 
     private void FixedUpdate()
@@ -40,7 +43,6 @@ public class BallPhysics : MonoBehaviour
         Vector3 normalVelocity;
         
         CorrectCollisionToSurface(ref hit);
-
         
         float dist = Vector3.Distance(hit.Position, pos);
         bool validY = dist <= r;
@@ -87,5 +89,12 @@ public class BallPhysics : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(lastGivenPos, 2.2f);
         }
+    }
+    
+    public void Reset()
+    {
+        velocity = Vector3.zero;
+        prevNormal = Vector3.zero;
+        lastGivenPos = Vector3.zero;
     }
 }

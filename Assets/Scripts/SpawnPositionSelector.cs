@@ -16,6 +16,7 @@ public class SpawnPositionSelector : MonoBehaviour
     /// Don't set this to less than the radius of the ball.
     /// </summary>
     [SerializeField] [Min(0f)] private float ySpawnOffset = 5f;
+    [SerializeField] private Vector3 spawnCameraOffset = new Vector3(12f, 8f, 0f);
     
     /// <summary>
     /// We allow the user to scroll the mouse wheel to offset the spawn position.
@@ -24,7 +25,6 @@ public class SpawnPositionSelector : MonoBehaviour
     private Vector3 lastValidSpawnPos;
     private GameObject hologram;
     private Camera spawnCamera;
-    private Vector3 spawnCameraOffset = new Vector3(12f, 8f, 0f);
     private BallManager ballManager;
     
     void Start()

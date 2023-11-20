@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BallManager : MonoBehaviour
@@ -10,9 +11,10 @@ public class BallManager : MonoBehaviour
     public static BallManager Instance;
     
     [SerializeField] private GameObject ballPrefab;
+    [SerializeField] private float ballDespawnY = -50f;
     
     // Ball pool. We use this to avoid creating and destroying balls.
-    List<GameObject> balls = new List<GameObject>();
+    List<BallPhysics> balls = new();
 
     private void Awake()
     {
@@ -27,11 +29,31 @@ public class BallManager : MonoBehaviour
     
     void Update()
     {
-        
+        foreach (var ball in balls)
+        {
+            if (ball.transform.position.y > ballDespawnY || !ball.gameObject.activeSelf)
+                continue;
+            
+            ball.gameObject.SetActive(false);
+            ball.Reset();
+            print("Set to inactive");
+            break;
+        }
     }
 
     public void SpawnBall(Vector3 position)
     {
-        balls.Add(Instantiate(ballPrefab, position, Quaternion.identity) as GameObject);
+        // Check if we have a ball in the pool
+        foreach (var ball in balls)
+        {
+            if (ball.gameObject.activeSelf) continue;
+            ball.transform.position = position;
+            ball.gameObject.SetActive(true);
+            print("Balls in the pool: " + balls.Count());
+            return;
+        }
+        var instantiated = Instantiate(ballPrefab, position, Quaternion.identity).GetComponent<BallPhysics>();
+        balls.Add(instantiated);
+        print("Balls in the pool: " + balls.Count());
     }
 }
