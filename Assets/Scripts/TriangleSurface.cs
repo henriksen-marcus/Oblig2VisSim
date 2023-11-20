@@ -42,10 +42,14 @@ public class TriangleSurface : MonoBehaviour
 
     [SerializeField] private TextAsset vertexData;
     [SerializeField] private TextAsset indexData;
+    [SerializeField] private bool drawMeshLines = false;
+    [SerializeField] private Color lineColor = Color.grey;
     
     private Mesh generatedMesh;
     List<Vertex> vertices = new();
     List<int> indices = new();
+
+    private Vector3 temp;
 
     // Start is called before the first frame update
     void Start()
@@ -95,6 +99,8 @@ public class TriangleSurface : MonoBehaviour
             indices.Add(int.Parse(line[1]));
             indices.Add(int.Parse(line[2]));
         }
+
+        temp = vertices[0].Pos;
     }
 
     private void InitMesh()
@@ -197,8 +203,10 @@ public class TriangleSurface : MonoBehaviour
 
     void OnDrawGizmos()
     {
+        if (!drawMeshLines) return;
+        
         // Draw normals for each triangle
-        for (var i = 0; i < indices.Count; i += 3)
+        /*for (var i = 0; i < indices.Count; i += 3)
         {
             int i1 = indices[i];
             int i2 = indices[i + 1];
@@ -213,7 +221,7 @@ public class TriangleSurface : MonoBehaviour
             Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
             Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
             Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
-        }
+        }*/
         
         // Draw line around each triangle
         for (var i = 0; i < indices.Count; i += 3)
@@ -226,7 +234,7 @@ public class TriangleSurface : MonoBehaviour
             var v2 = vertices[i2];
             var v3 = vertices[i3];
 
-            Gizmos.color = UnityEngine.Color.yellow;
+            Gizmos.color = lineColor;
             Gizmos.DrawLine(v1.Pos, v2.Pos);
             Gizmos.DrawLine(v2.Pos, v3.Pos);
             Gizmos.DrawLine(v3.Pos, v1.Pos);
