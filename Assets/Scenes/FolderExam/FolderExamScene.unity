@@ -167,6 +167,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c2bd4f1e88e72643bbfee5b2f7a4f8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  raindropPrefab: {fileID: 2918214719855086021, guid: a77867c9dc4a78542b13ecf8eee64dd0, type: 3}
+  spawnBounds:
+    m_Center: {x: 77, y: 156.6, z: 106.41}
+    m_Extent: {x: 127.5, y: 6.4, z: 125.2}
+  spawnRate: 3
+  spawnAmount: 1
+  raindropDespawnY: -40
 --- !u!1 &329492376
 GameObject:
   m_ObjectHideFlags: 0
