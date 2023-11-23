@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 /// <summary>
@@ -10,14 +11,14 @@ public class SpawnPositionSelector : MonoBehaviour
     [Header("Set these references")]
     [SerializeField] private Camera mainCamera;
     [SerializeField] private GameObject hologramPrefab;
-    [SerializeField] private GameObject defaultSpawnPoint;
     /// <summary>
     /// The vertical offset of the spawn position from the surface.
     /// Don't set this to less than the radius of the ball.
     /// </summary>
     [SerializeField] [Min(0f)] private float ySpawnOffset = 5f;
     [SerializeField] private Vector3 spawnCameraOffset = new Vector3(12f, 8f, 0f);
-    
+    [SerializeField] private Vector2 spawnCameraFovRange = new Vector2(50f, 110f);
+
     /// <summary>
     /// We allow the user to scroll the mouse wheel to offset the spawn position.
     /// </summary>
@@ -26,15 +27,22 @@ public class SpawnPositionSelector : MonoBehaviour
     private GameObject hologram;
     private Camera spawnCamera;
     private BallManager ballManager;
+
+    [SerializeField] private TriangleSurface triangleSurface;
     
     void Start()
     {
-        lastValidSpawnPos = defaultSpawnPoint.transform.position;
         hologram = Instantiate(hologramPrefab);
         hologram.SetActive(false);
+        
         spawnCamera = gameObject.AddComponent<Camera>();
         spawnCamera.rect = new Rect(0f, 0.7f, 0.3f, 0.3f);
+        spawnCamera.fieldOfView = (spawnCameraFovRange.x + spawnCameraFovRange.y) / 2;
+        
         ballManager = BallManager.Instance;
+        
+        if (WorldManager.Instance != null)
+            triangleSurface = WorldManager.Instance.triangleSurface;
     }
     
     private void OnDestroy()
@@ -44,18 +52,23 @@ public class SpawnPositionSelector : MonoBehaviour
     
     void Update()
     {
-        // Get scroll wheel input, don't let it go below 0
-        yCustomOffset = Mathf.Max(yCustomOffset + Input.mouseScrollDelta.y * 2, 0);
+        // Get scroll wheel input, don't let it go below 0 [DEPRECATED]
+        //yCustomOffset = Mathf.Max(yCustomOffset + Input.mouseScrollDelta.y * 2, 0);
+        spawnCamera.fieldOfView = Mathf.Clamp(spawnCamera.fieldOfView - Input.mouseScrollDelta.y * 3, spawnCameraFovRange.x, spawnCameraFovRange.y);
         
         // Reset custom offset on mouse wheel click
-        if (Input.GetMouseButtonDown(2)) yCustomOffset = 0;
+        if (Input.GetMouseButtonDown(2))
+        {
+            //yCustomOffset = 0;
+            spawnCamera.fieldOfView = (spawnCameraFovRange.x + spawnCameraFovRange.y) / 2;
+        }
 
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out var hit))
         {
             // Draw hologram
             lastValidSpawnPos = hit.point;
-            lastValidSpawnPos.y += ySpawnOffset + yCustomOffset;
+            lastValidSpawnPos.y += ySpawnOffset/* + yCustomOffset*/;
             hologram.transform.position = lastValidSpawnPos;
             hologram.SetActive(true);
             
@@ -69,6 +82,9 @@ public class SpawnPositionSelector : MonoBehaviour
             {
                 ballManager.SpawnBall(lastValidSpawnPos);
             }
+            
+            //var p = new Vector2(hit.point.x, hit.point.z);
+            //triangleSurface.DrawTriangleAtPosition(p);
         }
         else
         {
