@@ -137,7 +137,7 @@ public class TriangleSurface : MonoBehaviour
         /* We need a mesh collider for ray casting when spawning new balls.
          * it is not used for colliding the the balls themselves. */
         meshCollider = GetComponent<MeshCollider>();
-        meshCollider.sharedMesh = generatedMesh;
+        if (meshCollider) meshCollider.sharedMesh = generatedMesh;
         
         stepLength = Mathf.Abs(vertices[1].Pos.z - vertices[0].Pos.z);
         
