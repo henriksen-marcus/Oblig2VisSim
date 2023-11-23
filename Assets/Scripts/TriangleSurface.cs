@@ -51,19 +51,28 @@ public class TriangleSurface : MonoBehaviour
     
     private Mesh generatedMesh;
     private MeshCollider meshCollider;
-    List<Vertex> vertices = new();
-    List<int> indices = new();
+    private List<Vertex> vertices = new();
+    private List<int> indices = new();
     
+    /// <summary>
+    /// How many cells there are in the z direction.
+    /// </summary>
+    private int numCellsJ;
+    /// <summary>
+    /// The distance between each vertex in the mesh (x or z).
+    /// </summary>
+    private float stepLength;
+    /// <summary>
+    /// Other classes can request a triangle at a specific
+    /// position to be drawn.
+    /// </summary>
+    private List<int> triangleDrawQueue = new();
 
     void Start()
     {
         InitMesh();
-        //CalculateNormals();
-
-        /* We need a mesh collider for ray casting when spawning new balls.
-         * it is not used for colliding the the balls themselves. */
-        meshCollider = GetComponent<MeshCollider>();
-        meshCollider.sharedMesh = generatedMesh;
+        /*print(generatedMesh.bounds.min);
+        print(stepLength);*/
     }
     
     /// <summary>
@@ -121,10 +130,19 @@ public class TriangleSurface : MonoBehaviour
             vertices = vertices.Select(v => v.Pos).ToArray(),
             triangles = indices.ToArray()
         };
+        generatedMesh.RecalculateNormals();
 
         GetComponent<MeshFilter>().mesh = generatedMesh;
         
-        print("Mesh size: " + generatedMesh.bounds.size);
+        /* We need a mesh collider for ray casting when spawning new balls.
+         * it is not used for colliding the the balls themselves. */
+        meshCollider = GetComponent<MeshCollider>();
+        meshCollider.sharedMesh = generatedMesh;
+        
+        stepLength = Mathf.Abs(vertices[1].Pos.z - vertices[0].Pos.z);
+        
+        // Assuming z is the "vertical" axis in the 2D grid
+        numCellsJ = Mathf.FloorToInt(generatedMesh.bounds.size.z / stepLength);
     }
 
     private void CalculateNormals()
@@ -149,13 +167,66 @@ public class TriangleSurface : MonoBehaviour
         vertices.ForEach(v => v.Normal = v.Normal.normalized);
     }
 
+    /// <summary>
+    /// When we have a perfectly square grid, we can calculate the index of the
+    /// first triangle in the quad using world coordinates.
+    /// </summary>
+    /// <param name="position">A position on the mesh.</param>
+    /// <returns>The index in the indices array of the first triangle
+    /// in the quad that the given position is in.</returns>
+    private int GetTriangleIndex(Vector2 position)
+    {
+        int i = Mathf.FloorToInt(position.x / stepLength);
+        int j = Mathf.FloorToInt(position.y / stepLength);
+        int triangleNumber = 2 * (j + i * numCellsJ);
+        
+        /*print("position: " + position);
+        print("i: " + i + " j: " + j + " triangleNumber: " + triangleNumber);
+        print(numCellsJ);*/
+
+        return triangleNumber * 3;
+    }
+
     public Hit GetCollision(Vector2 position)
     {
         var hit = new Hit();
         hit.Position.x = position.x;
         hit.Position.z = position.y;
+        int quadIndex = GetTriangleIndex(position);
 
-        for (var i = 0; i < indices.Count; i += 3)
+        if (quadIndex >= 0 && quadIndex < indices.Count)
+        {
+            for (var i = quadIndex; i < quadIndex + 6; i+=3)
+            {
+                int i1 = indices[i];
+                int i2 = indices[i + 1];
+                int i3 = indices[i + 2];
+
+                var v1 = vertices[i1];
+                var v2 = vertices[i2];
+                var v3 = vertices[i3];
+
+                var v1e = new Vector2(v1.Pos.x, v1.Pos.z);
+                var v2e = new Vector2(v2.Pos.x, v2.Pos.z);
+                var v3e = new Vector2(v3.Pos.x, v3.Pos.z);
+                
+                float u, v, w;
+                Barycentric(v1e, v2e, v3e, position, out u, out v, out w);
+
+                if (IsInTriangle(u, v, w))
+                {
+                    var y = vertices[i1].Pos.y * u + vertices[i2].Pos.y * v + vertices[i3].Pos.y * w;
+                    hit.Position.y = y;
+                    hit.Normal = generatedMesh.normals[i1] * u + generatedMesh.normals[i2] * v + generatedMesh.normals[i3] * w;
+                    //hit.Normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos-v2.Pos).normalized;
+                    hit.isHit = true;
+                    return hit;
+                }
+            }
+        }
+        
+        // Linear topological search [DEPRECATED]
+        /*for (var i = 0; i < indices.Count; i += 3)
         {
             int i1 = indices[i];
             int i2 = indices[i + 1];
@@ -172,21 +243,55 @@ public class TriangleSurface : MonoBehaviour
             float u, v, w;
             Barycentric(v1e, v2e, v3e, position, out u, out v, out w);
 
-            if (u is >= 0f and <= 1f && v is >= 0f and <= 1f && w is >= 0f and <= 1f)
+            if (IsInTriangle(u, v, w))
             {
                 var y = vertices[i1].Pos.y * u + vertices[i2].Pos.y * v + vertices[i3].Pos.y * w;
-                //print($"{vertices[i1].y} * {u} + {vertices[i2].y} * {v} + {vertices[i3].y} * {w} = {y}");
                 hit.Position.y = y;
-                //hit.Normal = v1.Normal;
-                hit.Normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos-v2.Pos).normalized;
+                hit.Normal = generatedMesh.normals[i1] * u + generatedMesh.normals[i2] * v + generatedMesh.normals[i3] * w;
+                //hit.Normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos-v2.Pos).normalized;
                 hit.isHit = true;
-                //print("Triangle: " + i/3 + " hit!");
+                triangleToDraw = i;
                 return hit;
             }
-        }
+        }*/
         return hit;
     }
 
+    private static bool IsInTriangle(float u, float v, float w)
+    {
+        return (u is >= 0f and <= 1f && v is >= 0f and <= 1f && w is >= 0f and <= 1f);
+    }
+
+    /// <summary>
+    /// Performs a linear barycentric search for the triangle in a quad 
+    /// that contains the given position.
+    /// </summary>
+    /// <param name="firstTriangleIndex">First index of the quad or first triangle.</param>
+    /// <param name="position">The position we want to check.</param>
+    /// <returns>First index of the triangle the indices array that contains
+    /// the given position. -1 if the position is not in the quad.</returns>
+    private int QuadSearch(int firstTriangleIndex, Vector2 position)
+    {
+        int oldTriIndex = firstTriangleIndex;
+        for (var i = firstTriangleIndex; i < oldTriIndex + 6; i += 3)
+        {
+            var v1 = vertices[indices[i]];
+            var v2 = vertices[indices[i + 1]];
+            var v3 = vertices[indices[i + 2]];
+
+            var v1e = new Vector2(v1.Pos.x, v1.Pos.z);
+            var v2e = new Vector2(v2.Pos.x, v2.Pos.z);
+            var v3e = new Vector2(v3.Pos.x, v3.Pos.z);
+
+            float u, v, w;
+            Barycentric(v1e, v2e, v3e, position, out u, out v, out w);
+
+            if (IsInTriangle(u, v, w)) return i;
+        }
+        
+        return -1;
+    }
+    
     private static void Barycentric(Vector2 a, Vector2 b, Vector2 c, Vector2 p, out float u, out float v, out float w)
     {
         Vector2 v0 = b - a;
@@ -206,35 +311,65 @@ public class TriangleSurface : MonoBehaviour
         u = 1.0f - v - w;
     }
 
+    public void DrawTriangleAtPosition(Vector2 position)
+    {
+        var index = QuadSearch(GetTriangleIndex(position), position);
+        //print(index);
+        if (index == -1) return;
+        triangleDrawQueue.Add(index);
+    }
+
     void OnDrawGizmos()
     {
-        if (!drawNormals && !drawMeshLines) return;
-        
-        for (var i = 0; i < indices.Count; i += 3)
+        if (drawNormals || drawMeshLines)
         {
-            int i1 = indices[i];
-            int i2 = indices[i + 1];
-            int i3 = indices[i + 2];
-
-            var v1 = vertices[i1];
-            var v2 = vertices[i2];
-            var v3 = vertices[i3];
-
-            if (drawNormals)
+            for (var i = 0; i < indices.Count; i += 3)
             {
-                var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * normalLength;
-                Gizmos.color = normalColor;
-                Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
-                Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
-                Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
-            }
+                int i1 = indices[i];
+                int i2 = indices[i + 1];
+                int i3 = indices[i + 2];
 
-            if (!drawMeshLines) continue;
-            Gizmos.color = lineColor;
-            Gizmos.DrawLine(v1.Pos, v2.Pos);
-            Gizmos.DrawLine(v2.Pos, v3.Pos);
-            Gizmos.DrawLine(v3.Pos, v1.Pos);
+                var v1 = vertices[i1];
+                var v2 = vertices[i2];
+                var v3 = vertices[i3];
+
+                if (drawNormals)
+                {
+                    var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * normalLength;
+                    Gizmos.color = normalColor;
+                    Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
+                    Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
+                    Gizmos.DrawLine(v3.Pos, v3.Pos + normal);
+                }
+
+                if (!drawMeshLines) continue;
+                Gizmos.color = Color.grey;
+                Gizmos.DrawLine(v1.Pos, v2.Pos);
+                Gizmos.DrawLine(v2.Pos, v3.Pos);
+                Gizmos.DrawLine(v3.Pos, v1.Pos);
+            }
         }
+        
+        try
+        {
+            foreach (var index in triangleDrawQueue)
+            {
+                var v1 = vertices[indices[index]];
+                var v2 = vertices[indices[index + 1]];
+                var v3 = vertices[indices[index + 2]];
+
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(v1.Pos, v2.Pos);
+                Gizmos.DrawLine(v2.Pos, v3.Pos);
+                Gizmos.DrawLine(v3.Pos, v1.Pos);
+            }
+        }
+        catch (Exception e)
+        {
+            //print(e.Message);
+        }
+        
+        triangleDrawQueue.Clear();
     }
 }
 
