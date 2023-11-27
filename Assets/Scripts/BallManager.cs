@@ -22,6 +22,8 @@ public class BallManager : MonoBehaviour
     /// </summary>
     List<BallPhysics> balls = new();
 
+    private List<BallPhysics> pooledObjects1;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -38,11 +40,8 @@ public class BallManager : MonoBehaviour
         List<BallPhysics> ballsToRemove = new();
         int numBallsToRemove = balls.Count - maxDesiredBallsInPool;
         int numBallsRemoved = 0;
-        foreach (var ball in balls)
+        foreach (var ball in balls.Where(ball => ball.gameObject.activeSelf).Where(ball => ball.transform.position.y < ballDespawnY))
         {
-            if (ball.transform.position.y > ballDespawnY || !ball.gameObject.activeSelf)
-                continue;
-
             if (numBallsRemoved < numBallsToRemove)
             {
                 ballsToRemove.Add(ball);
