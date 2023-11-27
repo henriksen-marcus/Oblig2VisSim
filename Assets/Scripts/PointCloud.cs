@@ -146,7 +146,7 @@ public class PointCloud : MonoBehaviour
         // Apply offset to all points and scale down
         foreach (var i in vertices)
         {
-            i.Pos -= offset;
+            //i.Pos -= offset;
             //(i.Pos.y, i.Pos.z) = (i.Pos.z, i.Pos.y);
             i.Pos *= scale;
         }
