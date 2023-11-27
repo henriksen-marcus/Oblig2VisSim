@@ -167,13 +167,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c2bd4f1e88e72643bbfee5b2f7a4f8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  raindropPrefab: {fileID: 2918214719855086021, guid: a77867c9dc4a78542b13ecf8eee64dd0, type: 3}
+  raindropPrefab: {fileID: 7990614848874825195, guid: d47060ff9b8e31845991707d736ce13f, type: 3}
   spawnBounds:
-    m_Center: {x: 77, y: 156.6, z: 106.41}
-    m_Extent: {x: 127.5, y: 6.4, z: 125.2}
-  spawnRate: 3
+    m_Center: {x: 43.7, y: 156.6, z: 106.41}
+    m_Extent: {x: 35.9, y: 5, z: 96.5}
+  spawnRate: 0.1
   spawnAmount: 1
   raindropDespawnY: -40
+  maxDesiredDropsInPool: 100
 --- !u!1 &329492376
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,8 +251,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ae001e7e6813f44fa8206690c5ce1dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vertexData: {fileID: 4900000, guid: 2e9a3dc9ab3d6ae4b8e68be5669987c7, type: 3}
-  indexData: {fileID: 4900000, guid: 904a751360ba77e4fa9970385ac3123b, type: 3}
+  vertexData: {fileID: 4900000, guid: 0e4adbbe57ac73f4d9cbee44e915c2c3, type: 3}
+  indexData: {fileID: 4900000, guid: 0a715848c94864d4d9c0e7d8d0a8dd57, type: 3}
   drawMeshLines: 0
   drawNormals: 0
   normalLength: 3
@@ -823,6 +824,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballPrefab: {fileID: 2918214719855086021, guid: a77867c9dc4a78542b13ecf8eee64dd0, type: 3}
   ballDespawnY: -45
+  maxDesiredBallsInPool: 20
 --- !u!4 &2088883417
 Transform:
   m_ObjectHideFlags: 0
