@@ -20,6 +20,10 @@ public class RainManager : MonoBehaviour
     /// </summary>
     [SerializeField] private int spawnAmount = 1;
     [SerializeField] private float raindropDespawnY = -40f;
+    /// <summary>
+    /// If more balls than this exist in the pool,they get destroyed after going inactive.
+    /// </summary>
+    [SerializeField] private int maxDesiredDropsInPool = 100;
     
     
     void Start()
@@ -38,6 +42,31 @@ public class RainManager : MonoBehaviour
             drop.Reset();
             //print("Set to inactive");
             break;
+        }
+        
+        List<BallPhysics> dropsToRemove = new();
+        int numDropsToRemove = pooledObjects.Count - maxDesiredDropsInPool;
+        int numDropsRemoved = 0;
+        foreach (var drop in pooledObjects.Where(drop => drop.gameObject.activeSelf).Where(drop => drop.transform.position.y < raindropDespawnY))
+        {
+
+            if (numDropsRemoved < numDropsToRemove)
+            {
+                dropsToRemove.Add(drop);
+                numDropsRemoved++;
+            }
+            else
+            {
+                drop.gameObject.SetActive(false);
+                drop.Reset();
+            }
+            break;
+        }
+
+        foreach (var ball in dropsToRemove)
+        {
+            pooledObjects.Remove(ball);
+            Destroy(ball.gameObject);
         }
     }
 
@@ -61,7 +90,7 @@ public class RainManager : MonoBehaviour
         {
             var instantiated = Instantiate(raindropPrefab, GetRandPosition(), Quaternion.identity).GetComponent<BallPhysics>();
             pooledObjects.Add(instantiated);
-            print("Drops in the pool: " + pooledObjects.Count());
+            //print("Drops in the pool: " + pooledObjects.Count());
             spawnCount++;
         }
     }
