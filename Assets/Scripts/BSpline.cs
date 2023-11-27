@@ -16,23 +16,21 @@ public class BSpline : MonoBehaviour
     private int d = 2;
     List<int> knotVector = new List<int>();
     [SerializeField] List<Vector3> controlPoints = new();
-    [SerializeField] private int resolution = 20;
-    LineRenderer lineRenderer;
+    [SerializeField] private int resolutionPerPoint = 8;
 
     void Start()
     {
         n = controlPoints.Count;
         UpdateKnotVector();
-        lineRenderer.AddComponent<LineRenderer>();
-        
+        Evaluate(1);
     }
 
     void Update()
     {
-        for (float i = 1; i <= resolution; i++)
+        /*for (float i = 1; i <= resolution; i++)
         {
-            //Debug.DrawLine(Evaluate((i-1)/resolution), Evaluate(i/resolution));
-        }
+            Debug.DrawLine(Evaluate((i-1)/resolution), Evaluate(i/resolution));
+        }*/
     }
     
     public void AddPoint(Vector3 point)
@@ -40,11 +38,21 @@ public class BSpline : MonoBehaviour
         controlPoints.Add(point);
         n = controlPoints.Count;
         UpdateKnotVector();
+    }
+    
+    public int GetCount() => controlPoints.Count;
 
-        if (n > 2)
+    public Vector3[] GetPoints()
+    {
+        int resolution = resolutionPerPoint * (n - 1);
+        Vector3[] points = new Vector3[resolution+1];
+
+        for (int i = 0; i <= resolution; i++)
         {
-            lineRenderer.SetPositions(controlPoints.ToArray());
+            points[i] = Evaluate((float)i / resolution);
         }
+
+        return points;
     }
 
     private int findKnotInverval(float x)
@@ -76,8 +84,11 @@ public class BSpline : MonoBehaviour
     /// <returns>The position of the curve at time t.</returns>
     private Vector3 Evaluate(float t)
     {
-        print("n: " + n);
-        if (n < 3) return Vector3.zero;
+        if (n < 3)
+        {
+            print("Not enough control points to evaluate spline!");
+            return Vector3.zero;
+        }
         
         float range = n - 2;
         t = Mathf.Clamp01(t) * range;
@@ -115,4 +126,10 @@ public class BSpline : MonoBehaviour
         controlPoints.Clear();
         n = 0;
     }
+
+    /*private void OnDrawGizmos()
+    {
+        foreach (var v in controlPoints)
+            Gizmos.DrawWireSphere(v, 0.5f);
+    }*/
 }
