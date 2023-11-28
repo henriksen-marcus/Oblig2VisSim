@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 1544798426318760076}
   m_Layer: 0
   m_Name: PhysicsBall
-  m_TagString: Raindrop
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -32,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.017, y: 0.2339, z: 0.0064}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -65,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4bc8ade51420bc044973d994eb43bae7, type: 2}
+  - {fileID: 2100000, guid: c15de97d9aef89244b5ea0409d2aa1b9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -100,8 +100,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bounciness: 0
-  drawSplinePath: 0
-  distanceBetweenSplinePoints: 15
+  drawSplinePath: 1
+  distanceBetweenSplinePoints: 1
   showDebugSphere: 0
 --- !u!114 &338765040029354375
 MonoBehaviour:
@@ -138,7 +138,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0864f2f71bfffa140b9101a465ff9f65, type: 2}
+  - {fileID: 2100000, guid: 0fc37be7d8a1dae4bad4cde510650d0a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -170,7 +170,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.47999382
+        value: 0.04578209
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -240,5 +240,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 4
+  m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
