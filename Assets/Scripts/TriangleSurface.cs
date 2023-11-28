@@ -9,7 +9,7 @@ using UnityEngine;
 public class TriangleSurface : MonoBehaviour
 {
     /// <summary>
-    /// Information about a potential hit with the triangle
+    /// Information about a potential hit with a triangle
     /// mesh surface.
     /// </summary>
     public struct Hit
@@ -71,8 +71,8 @@ public class TriangleSurface : MonoBehaviour
     void Start()
     {
         InitMesh();
-        /*print(generatedMesh.bounds.min);
-        print(stepLength);*/
+        //print(generatedMesh.bounds.size);
+        //print(stepLength);
     }
     
     /// <summary>
@@ -343,7 +343,7 @@ public class TriangleSurface : MonoBehaviour
                 }
 
                 if (!drawMeshLines) continue;
-                Gizmos.color = Color.grey;
+                Gizmos.color = lineColor;
                 Gizmos.DrawLine(v1.Pos, v2.Pos);
                 Gizmos.DrawLine(v2.Pos, v3.Pos);
                 Gizmos.DrawLine(v3.Pos, v1.Pos);
