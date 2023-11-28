@@ -22,7 +22,6 @@ public class BSpline : MonoBehaviour
     {
         n = controlPoints.Count;
         UpdateKnotVector();
-        Evaluate(1);
     }
 
     void Update()
