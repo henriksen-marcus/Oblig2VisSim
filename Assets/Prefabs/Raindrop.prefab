@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2918214719855086021, guid: a77867c9dc4a78542b13ecf8eee64dd0, type: 3}
       propertyPath: m_Name
-      value: PhysicsBall
+      value: Raindrop
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

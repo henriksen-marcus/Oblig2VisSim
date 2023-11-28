@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 1544798426318760076}
   m_Layer: 0
   m_Name: PhysicsBall
-  m_TagString: Untagged
+  m_TagString: Raindrop
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controlPoints: []
-  resolution: 500
+  resolutionPerPoint: 8
 --- !u!120 &7981147400547513113
 LineRenderer:
   serializedVersion: 2
@@ -231,7 +231,7 @@ SphereCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -240,5 +240,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 3
+  m_Radius: 4
   m_Center: {x: 0, y: 0, z: 0}
