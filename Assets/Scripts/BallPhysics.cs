@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using UnityEngine.Animations;
 
 public class BallPhysics : MonoBehaviour
 {
@@ -23,7 +21,7 @@ public class BallPhysics : MonoBehaviour
     /// <summary>
     /// Mass.
     /// </summary>
-    private float m = 1f;
+    public float m { get; private set; }= 1f;
     /// <summary>
     /// Radius.
     /// </summary>
@@ -32,9 +30,9 @@ public class BallPhysics : MonoBehaviour
     /// Sphere trigger that checks for overlapping balls.
     /// </summary>
     private SphereCollider trigger;
-    private Vector3 velocity = Vector3.zero;
+    public Vector3 velocity {get; private set;} = Vector3.zero;
     private Vector3 lastCollPosition = Vector3.zero;
-    private List<BallPhysics> affectingBalls = new List<BallPhysics>();
+    private List<BallPhysics> ballIgnoreList = new();
     private BSpline splinePath;
     private Vector3 lastSplinePoint;
     private LineRenderer lineRenderer;
@@ -101,7 +99,9 @@ public class BallPhysics : MonoBehaviour
 
     private void Update()
     {
-        if (!hasBegunTracingPath) return;
+        CheckForBallCollision();
+        
+        if (!hasBegunTracingPath || !drawSplinePath) return;
         
         // Add position to spline path
         if (lastSplinePoint == Vector3.zero)
@@ -123,7 +123,6 @@ public class BallPhysics : MonoBehaviour
                 lineRenderer.positionCount = points.Length;
                 lineRenderer.SetPositions(points);
             }
-                
         }
     }
 
@@ -138,14 +137,43 @@ public class BallPhysics : MonoBehaviour
         hit.Position = p - Vector3.Dot(d, hit.Normal) * hit.Normal;
     }
 
-    private void OnDrawGizmos()
+    void CheckForBallCollision()
+    {
+        // We need to use OverlapSphere because OnTriggerEnter requires a rigidbody
+        Collider[] results = new Collider[5];
+        var size = Physics.OverlapSphereNonAlloc(transform.position, r, results);
+
+        if (size == 1) return;
+
+        // Check if we are overlapping any balls
+        for (int i = 0; i < size; i++)
+        {
+            var ball = results[i].GetComponent<BallPhysics>();
+            if (ball == null || ball == this || ballIgnoreList.Contains(ball)) continue;
+
+            // Our momentum, P = mv
+            Vector3 P = m * velocity;
+            // Momentum of other ball
+            Vector3 P_o = ball.m * ball.velocity;
+
+            // Exchange energy/momentum
+            var momentumExchange = P_o * 0.3f;
+            velocity += momentumExchange;
+            ball.velocity -= momentumExchange;
+            //Debug.DrawLine(transform.position, ball.transform.position, Color.red, 0.5f);
+            ballIgnoreList.Clear();
+            ballIgnoreList.Add(ball);
+        }
+    }
+
+    /*private void OnDrawGizmos()
     {
         if (showDebugSphere)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(lastCollPosition, 2.2f);
         }
-    }
+    }*/
     
     public void Reset()
     {
@@ -154,14 +182,6 @@ public class BallPhysics : MonoBehaviour
         lastSplinePoint = Vector3.zero;
         splinePath.Reset();
         lineRenderer.positionCount = 0;
-    }
-    
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.CompareTag("Raindrop"))
-        {
-            other.gameObject.SetActive(false);
-            other.GetComponent<BallPhysics>().Reset();
-        }
+        hasBegunTracingPath = false;
     }
 }
