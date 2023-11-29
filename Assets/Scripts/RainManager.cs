@@ -28,7 +28,7 @@ public class RainManager : MonoBehaviour
     
     void Start()
     {
-        InvokeRepeating(nameof(SpawnRaindrop), 0, spawnRate);
+        //InvokeRepeating(nameof(SpawnRaindrop), 0, spawnRate);
     }
     
     void Update()
@@ -43,6 +43,8 @@ public class RainManager : MonoBehaviour
             //print("Set to inactive");
             break;
         }
+        
+        //print(pooledObjects.Count(drop => drop.gameObject.activeSelf));
         
         List<BallPhysics> dropsToRemove = new();
         int numDropsToRemove = pooledObjects.Count - maxDesiredDropsInPool;
@@ -79,7 +81,7 @@ public class RainManager : MonoBehaviour
         {
             drop.transform.position = GetRandPosition();
             drop.gameObject.SetActive(true);
-            print("Drops in the pool: " + pooledObjects.Count());
+            //print("Drops in the pool: " + pooledObjects.Count());
             spawnCount++;
             
             if (spawnCount == spawnAmount)
@@ -103,6 +105,14 @@ public class RainManager : MonoBehaviour
             UnityEngine.Random.Range(spawnBounds.min.z, spawnBounds.max.z)
         );
         return randPos;
+    }
+
+    public void ToggleRain()
+    {
+        if (IsInvoking(nameof(SpawnRaindrop)))
+            CancelInvoke(nameof(SpawnRaindrop));
+        else
+            InvokeRepeating(nameof(SpawnRaindrop), 0, spawnRate);
     }
 
     private void OnDrawGizmosSelected()
