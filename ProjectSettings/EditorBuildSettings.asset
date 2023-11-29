@@ -4,5 +4,14 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/FolderExam/Task 2.2.unity
+    guid: 61c9782c47f4f624e91a3f3d5a56ddba
+  - enabled: 1
+    path: Assets/Scenes/FolderExam/Task 2.3-2.4.unity
+    guid: da00efcae77b06141a5dd2e8990083e3
+  - enabled: 1
+    path: Assets/Scenes/FolderExam/Task 3.unity
+    guid: 231cbd72d1a56c044b7b99e044e32698
   m_configObjects: {}
