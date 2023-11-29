@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class WorldManager : MonoBehaviour
 {
@@ -23,5 +24,25 @@ public class WorldManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void Task2_2()
+    {
+        SceneManager.LoadScene("Task 2.2");
+    }
+    
+    public void Task2_3()
+    {
+        SceneManager.LoadScene("Task 2.3-2.4");
+    }
+
+    public void Task3()
+    {
+        SceneManager.LoadScene("Task 3");
+    }
+    
+    public void Quit()
+    {
+        Application.Quit();
     }
 }
