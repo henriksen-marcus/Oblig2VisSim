@@ -74,7 +74,7 @@ public class TriangleSurface : MonoBehaviour
         //print(generatedMesh.bounds.size);
         //print(stepLength);
     }
-    
+
     /// <summary>
     /// Reads vertex and index data from file and puts them into the vertices and indices lists.
     /// </summary>
@@ -314,7 +314,6 @@ public class TriangleSurface : MonoBehaviour
     public void DrawTriangleAtPosition(Vector2 position)
     {
         var index = QuadSearch(GetTriangleIndex(position), position);
-        //print(index);
         if (index == -1) return;
         triangleDrawQueue.Add(index);
     }
@@ -336,6 +335,7 @@ public class TriangleSurface : MonoBehaviour
                 if (drawNormals)
                 {
                     var normal = Vector3.Cross(v2.Pos - v1.Pos, v3.Pos - v2.Pos).normalized * normalLength;
+                    
                     Gizmos.color = normalColor;
                     Gizmos.DrawLine(v1.Pos, v1.Pos + normal);
                     Gizmos.DrawLine(v2.Pos, v2.Pos + normal);
@@ -366,7 +366,6 @@ public class TriangleSurface : MonoBehaviour
         }
         catch (Exception e)
         {
-            //print(e.Message);
         }
         
         triangleDrawQueue.Clear();
