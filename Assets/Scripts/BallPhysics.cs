@@ -49,8 +49,6 @@ public class BallPhysics : MonoBehaviour
         r = transform.localScale.x / 2;
 
         trigger = GetComponent<SphereCollider>();
-        if (trigger == null)
-            print("SHIT");
         
         splinePath = GetComponent<BSpline>();
         lineRenderer = GetComponent<LineRenderer>();
