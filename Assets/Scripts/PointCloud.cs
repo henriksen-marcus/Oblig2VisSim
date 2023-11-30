@@ -20,16 +20,6 @@ public class ObjData
 
 public class PointCloud : MonoBehaviour
 {
-    private class Vertex
-    {
-        public Vector3 Pos;
-
-        public Vertex(Vector3 pos)
-        {
-            Pos = pos;
-        }
-    }
-    
     /// <summary>
     /// Text file containing vertex data.
     /// </summary>
@@ -53,7 +43,7 @@ public class PointCloud : MonoBehaviour
     [SerializeField] private float scale = 0.05f;
     [SerializeField] private float pointScale = 0.5f;
     
-    private List<Vertex> vertices = new();
+    private List<Vector3> vertices = new();
     private List<List<ObjData>> batches = new();
 
     private GameObject player;
@@ -83,7 +73,7 @@ public class PointCloud : MonoBehaviour
             
             currBatch.Add(new ObjData()
             {
-                pos = i.Pos,
+                pos = i,
                 scale = Vector3.one * pointScale,
                 rot = Quaternion.identity
             });
@@ -133,22 +123,20 @@ public class PointCloud : MonoBehaviour
         {
             var xyz = vertexLines[i].Split(delimchars, StringSplitOptions.RemoveEmptyEntries);
 
-            vertices.Add(new Vertex(new Vector3(
+            vertices.Add(new Vector3(
                 float.Parse(xyz[0], CultureInfo.InvariantCulture), 
                 float.Parse(xyz[1], CultureInfo.InvariantCulture), 
                 float.Parse(xyz[2], CultureInfo.InvariantCulture)
-            )));
+            ));
         }
         
         // Set origin to first point
-        offset = vertices[0].Pos;
+        offset = vertices[0];
         
         // Apply offset to all points and scale down
-        foreach (var i in vertices)
+        for (int i = 0; i < vertices.Count; i++)
         {
-            //i.Pos -= offset;
-            //(i.Pos.y, i.Pos.z) = (i.Pos.z, i.Pos.y);
-            i.Pos *= scale;
+            vertices[i] *= scale;
         }
     }
 
