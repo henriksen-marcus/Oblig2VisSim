@@ -1,5 +1,4 @@
 using System;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 /// <summary>
@@ -83,8 +82,8 @@ public class SpawnPositionSelector : MonoBehaviour
                 ballManager.SpawnBall(lastValidSpawnPos);
             }
             
-            //var p = new Vector2(hit.point.x, hit.point.z);
-            //triangleSurface.DrawTriangleAtPosition(p);
+            var p = new Vector2(hit.point.x, hit.point.z);
+            triangleSurface.DrawTriangleAtPosition(p);
         }
         else
         {
@@ -93,12 +92,12 @@ public class SpawnPositionSelector : MonoBehaviour
         }
     }
     
-    private void OnDrawGizmos()
+    /*private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        /*Gizmos.DrawWireSphere(lastValidSpawnPos, 10f);*/
+        /*Gizmos.DrawWireSphere(lastValidSpawnPos, 10f);#1#
         Gizmos.DrawRay(lastValidSpawnPos, Vector3.up * 1000f);
-    }
+    }*/
     
     public Vector3 GetSpawnPosition() => lastValidSpawnPos;
 }
